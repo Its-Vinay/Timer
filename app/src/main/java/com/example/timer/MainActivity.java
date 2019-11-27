@@ -2,14 +2,10 @@ package com.example.timer;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.content.Context;
+
 import android.content.SharedPreferences;
-import android.media.MediaPlayer;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
+import android.media.AudioAttributes;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Vibrator;
@@ -32,7 +28,8 @@ public class MainActivity extends AppCompatActivity {
     private long mstarttimeinmillis;
     private long mlefttimeinmillis;
     private long mendtime;
-
+    private SoundPool soundPool;
+    private int sound1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +40,14 @@ public class MainActivity extends AppCompatActivity {
         set = findViewById(R.id.btn_set);
         start_pause = findViewById(R.id.btn_start_pause);
         reset = findViewById(R.id.btn_reset);
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+        soundPool = new SoundPool.Builder()
+                .setAudioAttributes(audioAttributes)
+                .build();
+        sound1=soundPool.load(getApplicationContext(),R.raw.timer,1);
 
         set.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,18 +110,12 @@ public class MainActivity extends AppCompatActivity {
             public void onFinish() {
                 mtimerRunning = false;
                 updateWatchinterface();
-                Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
-                vibrator.vibrate(2000);
-                Notification notification = new Notification.Builder(getApplicationContext())
-                        .setContentTitle("Timer")
-                        .setContentText("Time is up !").build();
-                NotificationManager manager=(NotificationManager)getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-                notification.flags=Notification.FLAG_AUTO_CANCEL;
-                manager.notify(0,notification);
+                Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                vibrator.vibrate(1000);
 
-                Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-                Ringtone r = RingtoneManager.getRingtone(getApplicationContext(),uri);
-                r.play();
+                soundPool.play(sound1,1,1,0,-1,1);
+
+
             }
         }.start();
         mtimerRunning = true;
